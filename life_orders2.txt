@@ -1,0 +1,313 @@
+				[Conway's Game of Life]
+				[Watch in Long Tank 30]
+				[initial orders 2]
+		[main program]
+		T 46 K
+        G K
+[0]		Z F	[stop program after loading]
+[1]		T D	[clear acc]
+[2]		A 2 @ 
+[3]		G 400 F [call update subrutine]
+[4]		T F	[clear acc]
+[5]		A 5 @
+[6]		G 544 F [call transfer subrutine]
+[7]		E 1 @	[infinite loop]		
+[8]		Z F	
+	
+        Z F
+		[load initial field data]
+		T 960 K [set load point to field address]
+		P 0 F
+		K 0 F
+		P 0 F
+		U 0 F
+		P 0 F
+		P 0 F
+		P 0 F
+		P 0 F
+		P 0 F
+		P 0 F
+		R 0 F
+		P 0 F
+		J 0 F
+		P 0 F
+		R 0 F
+		P 0 F
+		P 0 F
+		P 240 F
+		P 0 F
+		P 360 F
+		P 240 F
+		P 408 F
+		P 136 F
+		I 408 F
+		R 128 F
+		I 360 F
+		I 72 F
+		I 240 F
+		K 0 F
+		P 0 F
+		P 0 F
+		
+		[load constants]
+		T 862 K
+[862]	P D
+		T 864 K
+[864]	P 3 D [7]
+		T 865 K
+[865] 	P 2 D [5]
+        T 867 K
+[867]	. F [2^35 in long 866 and 0 in short 866] 
+		T 868 K
+[868]	P D [1]
+		T 870 K
+[870]	P 1 F [2]
+		T 871 K
+[871] 	A D   
+		T 872 K
+[872]	P 1 D [3]
+		T 873 K
+[873]	P 2 F [4]
+		T 874 K
+[874]	E F
+		T 875 K
+[875]   P 480 F [field start address]
+		T 876 K
+[876]  	P 448 F [tmp buffer start addr]
+		T 877 K
+[877]	P 7 D [15]
+		T 878 K
+[878]	T D
+		T 879 K
+[879]  	P 17 D
+		T 880 K
+[880] 	P 4 F
+[-----------------------------------------------------------------------------------]				
+		[cyclic leftshift subrutine]
+		[long 996 is used for shifting]
+		[long 1002 is used as tmp]
+		T 700 K
+		G K
+[0]		A 3 F [forming return link]
+[1]		T 15 @ [plant return link]
+[2]		H 866 D [mult = 2^35]
+[3]		C 996 D [collacate with shifted number to get the sign bit]
+[4]		R F [shifting sign bit to the right]
+[5]		R F
+[6]		R 4 F
+[7]		T 1002 D [save acc to tmp]
+[8]		H 862 D [mult = long 1]
+[9]		C 1002 D [collacate with tmp]
+[10]	T 1002 D [save acc to tmp]
+		[now in tmp we have sign digit of shifted number moved to the right]
+[11]	A 996 D [acc = shifted number]
+[12]	L D [shifht number to the left]
+[13]	A 1002 D [add sign bit to the rightmost place]
+[14]	T 996 D [save shifted number to 996]
+[15] 	E F [return link]
+		[end of subrutine]
+[-----------------------------------------------------------------------------------]
+		[update subrutine]
+		[k is 1023]
+		[horK is 1022]
+		[cur field addr is 1021]
+		[cur tmp buffer addr is 1020]
+		[curAboveLine is 1018]
+		[curLine is 1016]
+		[curUnderLine is 1014]
+		[newLine is 1012]
+		[tmp is 1010]
+		[neiK is 1009]
+		[neiCnt is 1008]
+			T 400 K
+			G K
+[0]			A 3 F [forming return link]		
+[1]			T 126 @ [plant return link]
+[2]			A 960 D [copy bottom line]
+[3]			T 992 D	[above field]
+[4]			A 990 D	[and top line]
+[5]			T 958 D [under field]
+		[initializing update loop]
+[6]			A 875 F [acc = field start addr]
+[7]			T 1021 F [save acc to curFieldAddr]
+[8]			A 876 F [acc = tmp buffer start addr]
+[9]			T 1020 F [save acc to curTmpBuffAddr]
+[10]		A 877 F	[acc = 15]
+[131->11]	T 1023 F [save acc to k. K is used for counting remaining lines]
+
+		[forming read and write orders]
+[12]		A 1021 F [acc = cur field addr]
+[13]		S 870 F [acc -= 2]
+[14]		L D
+[15]		A 871 F [acc += AOD]
+[16]		U 29 @ [plant read order to curUnderLineA]
+[17]		A 873 F [acc -= 4]
+[18]		U 25 @ [plant read order to CurLineA]
+[19]		A 873 F
+[20]		T 27 @ [plant read order to curAboveLineA]			
+[21]		A 1020 F [acc = cur tmp buffer addr]
+[22]		L D
+[23]		A 878 F [acc += TD]
+[24]		T 115 @ [plant write order]
+	
+[25]		A D [curLineA]
+[26]    	T 1016 D [sav to curLine]
+[27]		A D [curAboveLineA]
+[28] 		T 1018 D
+[29]		A D [curUnderLineA]
+[30]		T 1014 D
+[31]		A 879 F [acc = 35]
+[112->32]	T 1022 F [sav acc to horK. horK is used for horizontal loop counter]
+		[shifting all lines]
+[33]		A 1016 D [acc = curLine]
+[34]		T 996 D [sav acc to shiftReg]
+[35]		A 35 @ [shift subrutine call]
+[36]		G 700 F
+[37]		T D [clear acc]
+[38]		A 996 D [acc = shifted number]
+[39]		T 1016 D [sav acc to curLine]
+			
+[40]		A 1014 D [acc = curUnderLine]
+[41]		T 996 D [sav acc to shiftReg]
+[42]		A 42 @ [shift subrutine call]
+[43]		G 700 F
+[44]		T D [clear acc]
+[45]		A 996 D [acc = shifted number]
+[46]		T 1014 D [sav acc to curUnderLine]
+
+[47]		A 1018 D [acc = curAboveLine]
+[48]		T 996 D [sav acc to shiftReg]
+[49]		A 49 @ [shift subrutine call]
+[50]		G 700 F
+[51]		T D [clear acc]
+[52]		A 996 D [acc = shifted number]
+[53]		T 1018 D [sav acc to curAboveLine]
+		[count neigbours]
+[54]		H 864 F [mult = 7]
+[55]		C 1018 F [collacate with curAboveLine]
+[56]		L 2 F
+[57]		T 1010 F [sav to tmp]
+[58]		C 1014 F [collacate with curUnderLine]
+[59]		A 1010 F [add to tmp]
+[60] 		L 2 F
+[61]		T 1010 F [sav tmp]
+[62]		H 865 F [mult = 5]
+[63]		C 1016 F [collacate with curLine]
+[64] 		A 1010 F [add tmp]
+[65]		T 1010 F [sav tmp]
+		[now in tmp we have as many ones as neigbours]
+[66]		T F
+[67]		T 1008 F [clear neiCnt]
+[68]		H 862 F [mult = 1]
+[69]		A 880 F [acc = 8]
+[79->70]	T 1009 F [sav to neiK]
+[71]		C 1010 F [collacate with tmp]
+[72]		A 1008 F [add neiCnt]
+[73] 		T 1008 F [sav to neiCnt]
+[74]		A 1010 F [acc = tmp]
+[75]		R D
+[76]		T 1010 F [sav tmp]
+[77]		A 1009 F [acc = neiK]
+[78]		S 862 F [acc -= 1]
+[79]		E 70 @
+[80] 		T F
+		[write 0 or 1]
+[81]		H 870 F [mult = 2]
+[82]		C 1016 F
+[83]		S 870 F [acc -= 2]
+[84]		E 92 @ [if cell = 1]
+[85]		T F
+		[if cell dead]
+[86]		A 1008 F [acc = neiCnt]
+[87]		S 872 F [acc -= 3]
+[88]		G 105 @ [goto write 0]
+[89]		S 862 F [acc -= 1]
+[90]		G 98 @ [goto write 1]
+[91]		E 105 @ [goto write 0]
+		[if cell alive]
+[92]		T F
+[93]		A 1008 F [acc = neiCnt]
+[94]		S 870 F [acc -= 2]
+[95]		G 105 @ [goto write 0]
+[96]		S 870 F [acc -= 2]
+[97]		E 105 @ [goto write 0]
+		[write 1]
+[98]		T D
+[99]		A 1012 D [acc = newLine]
+[100]		L D
+[101]		A 862 D [acc += 1]
+[102]		T 1012 D
+[103]		A 862 F	
+[104]		E 109 @ [goto end]
+		[write 0]	
+[105]		T D
+[106]		A 1012 D [acc = newLine]
+[107]		L D		[acc <<= 1]
+[108]		T 1012 D [sav to acc]
+
+[109]		T D [finish of if-else]
+			
+[110]		A 1022 F [acc = horK]
+[111]		S 862 F [acc -= 1]
+[112]		E 32 @ [goto next iteration]
+				
+[113]		T F	
+[114]		A 1012 D [acc = newLine]
+
+[115]   	T D [sav newLine to fieldBuff]
+		[loop check]
+[116]		A 1021 F [acc = cur field addr]
+[117]		A 870 F [acc += 2]
+[118]		T 1021 F [sav cur field addr]
+[119]		A 1020 F [acc = cur field buff addr]
+[120]		A 870 F [acc += 2]
+[121]		T 1020 F [sav cur field buff addr]
+				
+[122]		A 1023 F [acc = k]
+[123]		S 862 F [acc -= 1]
+[124]		E 11 @
+[125] 		T D
+[126]		E F
+		[end of update subrutine]
+[-----------------------------------------------------------------------------------]
+		
+		[transfer buffer to field subrutine]
+		[1023 is cur sourceAddr]
+		[1022 is cur distAddr]
+		[1021 is k]
+			T 544 K
+			G K
+[0]			A 3 F [forming return link]
+[1]			T 28 @ [plant return link]
+[2]			A 876 F [acc = field buffer addr] 
+[3]			T 1023 F [sav to sourceAddr]
+[4]			A 875 F	[acc = field addr]
+[5]			T 1022 F [sav to distAddr]
+
+[6]			A 877 F [acc = 15]
+[7]			T 1021 F [sav to k]
+
+[8]			A 1023 F [acc = sourceAddr]
+[9]			L D
+[10]		A 871 F [acc += AD]
+[11]		T 16 @	[plant read order]
+
+[12]		A 1022 F [acc = distAddr]
+[13]		L D
+[14]		A 878 F [acc += TD]
+[15]		T 17 @	[plant write order]
+[16]		A D	[read order]
+[17]		T D	[write order]
+
+[18]		A 1023 F [acc = sourceAddr]
+[19]		A 870 F	[acc += 2]
+[20]		T 1023 F [sav to sourceAddr]
+[21]		A 1022 F [acc = distAddr]
+[22]		A 870 F	[acc += 2]
+[23]		T 1022 F [sav to distAddr]
+[24]		A 1021 F [acc = k]
+[25]		S 862 F	[acc -= 1]
+[26]		E 7 @	[if k >= 0 write next line]
+[27]		T D [clear acc]
+[28]		E F [return link]
+			E 46 K P F 
